@@ -1,0 +1,95 @@
+import requests
+
+
+access_token = ''
+global_to_find_id = ''  # рандомный пользователь
+global_user_id = ''  # мой id
+
+
+#  функция проверяет
+#  ЯВЯЛЕТСЯ ЛИ некий пользователь (current_user_id)
+#  другом того, кого он ищет (user_id)
+#  это на всякий случай, если человек совсем дебил
+def check_is_friend(current_user_id, user_id):
+    requests_for_friends = requests.get('https://api.vk.com/method/friends.get?',
+                                        params={
+                                           'access_token': access_token,
+                                           'v': '5.92',
+                                           'user_id': str(current_user_id),
+                                           'order': 'hints',
+                                           'count': '5000',
+                                           'offset': '0',
+                                           'name_case': 'nom',
+                                        })
+    for friend_id in list(requests_for_friends.json()['response']['items']):
+        if str(friend_id) == str(user_id):
+            #  текущий пользователь друг
+            return True
+        else:
+            continue
+    #  текущий пользователь НЕ друг
+    return False
+
+
+#  функция проверят
+#  ЕСТЬ ЛИ общие друзья между
+#  неким пользователем (current_user_id)
+#  и человеком, которого он ищет (user_id)
+#  ЕСТЬ ЕСТЬ ОБЩИЕ, то возвращается id первого из этого списка
+def check_has_mutual(current_user_id, user_id):
+    requests_for_mutual = requests.get('https://api.vk.com/method/friends.getMutual?',
+                                       params={
+                                           'access_token': access_token,
+                                           'v': '5.92',
+                                           'source_uid': str(current_user_id),
+                                           'target_uid': str(user_id),
+                                           'order': 'hints',
+                                           'count': '5000',
+                                           'offset': '0',
+                                       })
+    if requests_for_mutual.json()['response'] == list():
+        return False
+    else:
+        mutuals = list()
+        for mutual_id in list(requests_for_mutual.json()['response']):
+            mutuals.append(mutual_id)
+        return mutuals
+
+
+#  функция проверяет
+#  была ли СТРАНИЦА УДАЛЕНА
+def check_is_deleted(user_id):
+    requests_for_deleted = requests.get('https://api.vk.com/method/users.get?',
+                                        params={
+                                            'access_token': access_token,
+                                            'v': '5.92',
+                                            'user_ids': str(user_id),
+                                            'fields': 'verified',
+                                            'name_case': 'nom'
+                                        })
+    if requests_for_deleted.json()['response'][0]['first_name'] == 'DELETED':
+        return True
+    elif 'deactivated' in requests_for_deleted.json()['response'][0]:
+        return True
+    else:
+        return False
+
+
+#  функция получает
+#  информацию о первом друге текущего пользователя
+def scan_next():
+    pass
+
+
+#  функция проверяет
+#  ПРИВАТНЫЙ ЛИ аккаунт текущего пользователя
+def check_is_closed():
+    pass
+
+
+def main():
+    pass
+
+
+if __name__ == "__main__":
+    main()

@@ -105,7 +105,7 @@ def check_is_closed():
 
 
 def main():
-    scan_next(89309866)
+    pass
 
 
 if __name__ == "__main__":

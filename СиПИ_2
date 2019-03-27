@@ -2,8 +2,8 @@ import requests
 
 
 access_token = ''
-global_to_find_id = ''  # рандомный пользователь
-global_user_id = ''  # мой id
+global_to_find_id = ''  # пользователь, которого надо найти
+global_user_id = ''  # пользователь, который ищет
 
 
 #  функция проверяет
@@ -77,8 +77,25 @@ def check_is_deleted(user_id):
 
 #  функция получает
 #  информацию о первом друге текущего пользователя
-def scan_next():
-    pass
+def scan_next(current_user_id):
+    requests_for_next = requests.get('https://api.vk.com/method/friends.get?',
+                                     params={
+                                         'access_token': access_token,
+                                         'v': '5.92',
+                                         'user_id': str(current_user_id),
+                                         'order': 'hints',
+                                         'count': '5000',
+                                         'offset': '0',
+                                         'name_case': 'nom',
+                                     })
+    if requests_for_next.json()['response']['count'] == 0:
+        print('no friends')
+    else:
+        i = 0
+        while check_is_deleted(requests_for_next.json()['response']['items'][i]) == True:
+            if check_is_deleted(requests_for_next.json()['response']['items'][i]) == True:
+                i += 1
+        check_has_mutual(requests_for_next.json()['response']['items'][i], global_user_id)
 
 
 #  функция проверяет
@@ -88,7 +105,7 @@ def check_is_closed():
 
 
 def main():
-    pass
+    scan_next(89309866)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,64 @@
+import requests
+
+access_token = ''  # ваш access_token
+target_id = ''  # ваш id vk
+
+#  all friends of user
+r = requests.get('https://api.vk.com/method/friends.get?',
+                 params={
+                     'user_id': '249338557',  # id человека, который хочет искать кого-то, я выбрал рандомного
+                     'access_token': access_token,
+                     'order': 'hints',
+                     'count': '1',
+                     'offset': '0',
+                     'fields': 'domain',
+                     'name_case': 'nom',
+                     'v': '5.92'
+                 })
+
+items = r.json()['response']['items']  # список инфы о первом друге пользователя
+print(items)
+uid = items[0]['id']  # id первого друга корневого пользователя
+print(uid)
+
+
+def first_friend_id(current_user_id):
+    check_offset = 0
+
+    check_closed = requests.get('https://api.vk.com/method/users.get?',
+                                params={
+                                    'access_token': access_token,
+                                    'v': '5.92',
+                                    'user_ids': str(current_user_id),
+                                    'fields': None,
+                                    'name_case': 'nom'
+                                })
+    print(check_closed.json()['response'])
+
+    mutual_req = requests.get('https://api.vk.com/method/friends.getMutual?',
+                              params={
+                                  'access_token': access_token,
+                                  'source_uid': str(current_user_id),
+                                  'target_uid': target_id,
+                                  'order': 'hints',
+                                  'count': '1',
+                                  'offset': str(check_offset),
+                                  'v': '5.92'
+                              })
+    return mutual_req.json()
+
+
+while first_friend_id(uid)['response'] == list():  # пока нет общих между текущим пользователем и мной
+    friend_req = requests.get('https://api.vk.com/method/friends.get?',
+                              params={
+                                  'user_id': str(uid),
+                                  'access_token': access_token,
+                                  'order': 'hints',
+                                  'count': '1',
+                                  'offset': '0',
+                                  'fields': 'domain',
+                                  'name_case': 'nom',
+                                  'v': '5.92'
+                              })
+    uid = friend_req.json()['response']['items'][0]['id']
+    first_friend_id(uid)

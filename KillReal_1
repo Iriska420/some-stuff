@@ -1,0 +1,35 @@
+import requests
+
+
+access_token = ''
+my_id = ''
+find_id = ''
+
+
+def f(_id):
+    r = requests.get('https://api.vk.com/method/friends.get?',
+                     params={
+                         'access_token': access_token,
+                         'v': '5.92',
+                         'user_id': str(_id),
+                         'order': 'hints',
+                         'count': '5000',
+                         'offset': '0',
+                         'name_case': 'nom',
+                     })
+    print(r.json()['response']['items'])
+    count = 0
+    for i in r.json()['response']['items']:
+        if i == 78840885:
+            count += 1
+            print('found: ' + str(count))
+        else:
+            count += 1
+
+
+def main():
+    f(find_id)
+
+
+if __name__ == "__main__":
+    main()

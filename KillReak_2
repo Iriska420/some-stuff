@@ -1,0 +1,92 @@
+import requests
+
+access_token = '2'
+my_id = ''
+find_id = ''
+
+
+#  проверить, есть ли у ползователя друзья
+def has_friends(_id):
+    r = requests.get('https://api.vk.com/method/friends.get?',
+                     params={
+                         'access_token': access_token,
+                         'v': '5.92',
+                         'user_id': str(_id),
+                         'order': 'hints',
+                         'count': '5000',
+                         'offset': '0',
+                         'name_case': 'nom',
+                     })
+    print(r.json()['response'])
+    if r.json()['response']['count'] > 0:
+        print('Количесвто друзей: ' + str(r.json()['response']['count']))  # кол-во друзей
+        has_mutual(_id, my_id)
+    else:
+        if _id == find_id:
+            print('Корневой пользователь не имеет друзей')
+
+
+#  проверить, есть ли с пользователем общие друзья
+def has_mutual(cur_id, my_id_):
+    r = requests.get('https://api.vk.com/method/friends.getMutual?',
+                     params={
+                         'access_token': access_token,
+                         'v': '5.92',
+                         'source_uid': str(cur_id),
+                         'target_uid': str(my_id_),
+                         'order': 'hints',
+                         'count': '50',
+                         'offset': '0',
+                     })
+    #  print(r.json()['response'])
+    if r.json()['response'] == list():
+        print('нет общих с ' + str(cur_id))
+        r2 = requests.get('https://api.vk.com/method/friends.get?',
+                          params={
+                              'access_token': access_token,
+                              'v': '5.92',
+                              'user_id': str(cur_id),
+                              'order': 'hints',
+                              'count': '5000',
+                              'offset': '0',
+                              'name_case': 'nom',
+                          })
+        print(r2.json()['response']['items'])
+        print('\n')
+        for i in r2.json()['response']['items']:
+            handle_first(i)
+
+
+#  проверить, удалена ли страница пользователя
+def is_deleted():
+    pass
+
+
+#  проверить, есть ли друзья у друга текущего ользователя
+def has_friends_of_friend():
+    pass
+
+
+def handle_first(_id):
+    r = requests.get('https://api.vk.com/method/users.get?',
+                     params={
+                         'access_token': access_token,
+                         'v': '5.92',
+                         'user_ids': str(_id),
+                         'fields': 'verified',
+                         'name_case': 'nom'
+                     })
+    print(r.json()['response'])
+    print('Закрытый аккаунт: ' + str(r.json()['response'][0]['is_closed']))  # открытый акк
+    print('Не удалена страница: ' + str(r.json()['response'][0]['verified']))  # не удален
+
+    if r.json()['response'][0]['is_closed'] is False:
+        has_friends(_id)
+
+
+def main():
+    handle_first(find_id)
+
+
+if __name__ == "__main__":
+    main()
